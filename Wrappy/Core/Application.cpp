@@ -94,6 +94,8 @@ void DrawClock(HDC hdc)
 
 namespace Wrappy
 {
+	static struct offscreen_buffer back_buffer;
+
 	Application::Application()
 	{
 		Window("Test", 400, 400);
@@ -107,7 +109,15 @@ namespace Wrappy
 
 	void Application::Run()
 	{
-		while (true);
+		ShowWindow(m_handle, SW_SHOW);
+		UpdateWindow(m_handle);
+		
+		running = true;
+
+		while (running)
+		{
+			processWindowsEvents();
+		}
 	}
 
 	void Application::Window(std::string title, int width, int height)
@@ -126,34 +136,33 @@ namespace Wrappy
 						NULL, NULL, GetModuleHandleW(NULL), NULL
 		);
 
+		DeviceContext = GetDC(m_handle);
+
 		if (!m_handle)
 		{
 			// TODO: Handle Error
-		}
-
-		ShowWindow(m_handle, SW_SHOW);
-		UpdateWindow(m_handle);
-
-		while (true)
-		{
-			processWindowsEvents();
 		}
 	}
 
 	void Application::registerWindowClass()
 	{
 		WNDCLASS wc = { };
-		wc.style = 0;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
 		wc.lpfnWndProc = &Application::WindowsEvents;
 		wc.cbClsExtra = 0;
 		wc.cbWndExtra = 0;
 		wc.hInstance = GetModuleHandleW(NULL);
 		wc.hIcon = NULL;
 		wc.hCursor = 0;
-		wc.hbrBackground = 0;
+		wc.hbrBackground = NULL;
 		wc.lpszMenuName = NULL;
 		wc.lpszClassName = windowClassName;
 		RegisterClass(&wc);
+	}
+
+	void Application::onPaint()
+	{
+
 	}
 
 	LRESULT CALLBACK Application::WindowsEvents(HWND win, UINT msg, WPARAM w, LPARAM l)
@@ -168,15 +177,36 @@ namespace Wrappy
 			InvalidateRect(win, NULL, FALSE);
 			break;
 
+		case WM_ERASEBKGND:
+			return false;
+
 		case WM_PAINT:
 		{
+			Application::onPaint();
+			RECT Client_Rect;
+			GetClientRect(win, &Client_Rect);
+			int win_width = Client_Rect.right - Client_Rect.left;
+			int win_height = Client_Rect.bottom + Client_Rect.left;
 			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(win, &ps);
-			printf("Paint\n");
+			HDC Memhdc;
+			HDC hdc;
+			HBITMAP Membitmap;
+			hdc = BeginPaint(win, &ps);
+			Memhdc = CreateCompatibleDC(hdc);
+			Membitmap = CreateCompatibleBitmap(hdc, win_width, win_height);
+			SelectObject(Memhdc, Membitmap);
+			
+			//drawing code goes in here
 			DrawClock(hdc);
+			printf("Paint");
+
+			//BitBlt(hdc, 0, 0, win_width, win_height, Memhdc, 0, 0, SRCCOPY);
+			//DeleteObject(Membitmap);
+			//DeleteDC(Memhdc);
+			//DeleteDC(hdc);
 			EndPaint(win, &ps);
-		}
-		break;
+		} break;
+
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
@@ -192,6 +222,11 @@ namespace Wrappy
 		MSG msg;
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
+			if (msg.message == WM_QUIT)
+			{
+				running = false;
+			}
+
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
@@ -200,7 +235,6 @@ namespace Wrappy
 	{
 		GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 	}
-
 	void Application::endGDIplus()
 	{
 		GdiplusShutdown(gdiplusToken);

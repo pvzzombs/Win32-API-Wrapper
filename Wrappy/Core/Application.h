@@ -23,14 +23,19 @@ namespace Wrappy
 		{
 			return new Application();
 		}
+
 		virtual ~Application();
 		void Run();
+
 		// Window Related
 		void Window(std::string title, int width, int height);
 		void registerWindowClass();
+		static void onPaint();
+
 		// Message Related
 		static LRESULT CALLBACK WindowsEvents(HWND win, UINT msg, WPARAM w, LPARAM l);
 		void processWindowsEvents();
+
 		// GDI+ Related
 		void startGDIplus();
 		void endGDIplus();
@@ -41,6 +46,8 @@ namespace Wrappy
 		LPCSTR windowClassName = "WrappyApp";
 		GdiplusStartupInput gdiplusStartupInput;
 		ULONG_PTR           gdiplusToken;
+		HDC					DeviceContext;
+		bool				running;
 	};
 }
 

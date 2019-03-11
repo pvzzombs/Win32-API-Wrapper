@@ -16,9 +16,6 @@
     <Filter Include="Core">
       <UniqueIdentifier>{72d10b0a-c05c-4ab8-93d2-4d08e0ee830e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\NewFilter1">
-      <UniqueIdentifier>{87248a9b-001a-443f-afee-7767e40c8513}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Application.cpp">
