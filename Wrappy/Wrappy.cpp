@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-	auto app = Wrappy::Application::CreateApplication();
+	auto app = Application::CreateApplication("Hello", 400, 400);
 	app->Run();
 	delete app;
 	return 0;
