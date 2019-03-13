@@ -97,71 +97,9 @@ void DrawClock(HDC device_context)
 }
 /* End of Clock Specific */
 
-static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l)
-{
-    PAINTSTRUCT ps;
-
-    switch (msg)
-    {
-    case WM_CREATE:
-        win32_drawing_objects *obj = Application::App()->get_drawing_objects();
-        win32_window_dimensions *dim = Application::App()->get_window_dimension();
-
-        obj->hdc = GetDC(win);
-        obj->hdcBuf = CreateCompatibleDC(obj->hdc);
-        obj->hbmpBuf = CreateCompatibleBitmap(obj->hdcBuf, dim->width, dim->height);
-        obj->gfxBuf = Graphics::FromHDC(obj->hdcBuf);
-        SelectObject(obj->hdcBuf, obj->hbmpBuf);
-
-        /* Alt Code */
-        // TODO: If this works then remove out of drawing objects and just make a temporary.
-        DeleteObject(obj->hbmpBuf);
-        /* End Alt Code */
-
-        return 0;
-
-    case WM_ERASEBKGND:
-        return 1;
-
-    case WM_PAINT:
-    {
-        win32_drawing_objects *obj = Application::App()->get_drawing_objects();
-        win32_window_dimensions *dim = Application::App()->get_window_dimension();
-
-        /* Alt Code */
-        SelectObject(obj->hdcBuf, GetStockObject(WHITE_BRUSH));
-        Rectangle(obj->hdcBuf, 0, 0, dim->width, dim->height);
-        Application::App()->draw(obj->hdcBuf); // USER FUNCTION
-        DrawClock(obj->hdcBuf);
-        obj->hdc = BeginPaint(win, &ps);
-        BitBlt(obj->hdc, 0, 0, dim->width, dim->height, obj->hdcBuf, 0, 0, SRCCOPY);
-        EndPaint(win, &ps);
-        /* End Alt Code */
-
-        //HDC temp = BeginPaint(win, &ps);
-        /* Start :: Custom Drawing*/
-        //Application::App()->draw(temp);
-        //DrawClock(Application::App()->gfx_buffer());
-        /* End :: Custom Drawing*/
-        //BitBlt(temp, 0, 0, dim->width, dim->height, obj->hdcBuf, 0, 0, SRCCOPY);
-        //EndPaint(win, &ps);
-        return 0;
-    }
-    break;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
-
-    default:
-        break;
-    }
-    return DefWindowProc(win, msg, w, l);
-}
-
 Application *Application::app = nullptr;
 
-Application::Application(const char *window_name, unsigned int width, unsigned int height)
+Application::Application(const char *window_name, uint32_t width, uint32_t height)
 {
     app = this;
 
@@ -263,12 +201,87 @@ void Application::clean_graphics_object()
     //DeleteObject(drawing_objects.hbmpBuf)
 }
 
+void init_input()
+{
+    key_map[0x41] = Keys::A;
+    key_map[0x42] = Keys::B;
+    key_map[0x43] = Keys::C;
+    key_map[0x44] = Keys::D;
+    key_map[0x45] = Keys::E;
+    key_map[0x46] = Keys::F;
+    key_map[0x47] = Keys::G;
+    key_map[0x48] = Keys::H;
+    key_map[0x49] = Keys::I;
+    key_map[0x4A] = Keys::J;
+    key_map[0x4B] = Keys::K;
+    key_map[0x4C] = Keys::L;
+    key_map[0x4D] = Keys::M;
+    key_map[0x4E] = Keys::N;
+    key_map[0x4F] = Keys::O;
+    key_map[0x50] = Keys::P;
+    key_map[0x51] = Keys::Q;
+    key_map[0x52] = Keys::R;
+    key_map[0x53] = Keys::S;
+    key_map[0x54] = Keys::T;
+    key_map[0x55] = Keys::U;
+    key_map[0x56] = Keys::V;
+    key_map[0x57] = Keys::W;
+    key_map[0x58] = Keys::X;
+    key_map[0x59] = Keys::Y;
+    key_map[0x5A] = Keys::Z;
+
+    key_map[VK_F1] = Keys::F1;
+    key_map[VK_F2] = Keys::F2;
+    key_map[VK_F3] = Keys::F3;
+    key_map[VK_F4] = Keys::F4;
+    key_map[VK_F5] = Keys::F5;
+    key_map[VK_F6] = Keys::F6;
+    key_map[VK_F7] = Keys::F7;
+    key_map[VK_F8] = Keys::F8;
+    key_map[VK_F9] = Keys::F9;
+    key_map[VK_F10] = Keys::F10;
+    key_map[VK_F11] = Keys::F11;
+    key_map[VK_F12] = Keys::F12;
+
+    key_map[VK_DOWN] = Keys::DOWN;
+    key_map[VK_LEFT] = Keys::LEFT;
+    key_map[VK_RIGHT] = Keys::RIGHT;
+    key_map[VK_UP] = Keys::UP;
+
+    key_map[VK_BACK] = Keys::BACK;
+    key_map[VK_ESCAPE] = Keys::ESCAPE;
+    key_map[VK_RETURN] = Keys::ENTER;
+    key_map[VK_PAUSE] = Keys::PAUSE;
+    key_map[VK_SCROLL] = Keys::SCROLL;
+    key_map[VK_TAB] = Keys::TAB;
+    key_map[VK_DELETE] = Keys::DEL;
+    key_map[VK_HOME] = Keys::HOME;
+    key_map[VK_END] = Keys::END;
+    key_map[VK_PRIOR] = Keys::PGUP;
+    key_map[VK_NEXT] = Keys::PGDN;
+    key_map[VK_INSERT] = Keys::INS;
+    key_map[VK_SHIFT] = Keys::SHIFT;
+    key_map[VK_CONTROL] = Keys::CTRL;
+    key_map[VK_SPACE] = Keys::SPACE;
+
+    key_map[0x30] = Keys::K0;
+    key_map[0x31] = Keys::K1;
+    key_map[0x32] = Keys::K2;
+    key_map[0x33] = Keys::K3;
+    key_map[0x34] = Keys::K4;
+    key_map[0x35] = Keys::K5;
+    key_map[0x36] = Keys::K6;
+    key_map[0x37] = Keys::K7;
+    key_map[0x38] = Keys::K8;
+    key_map[0x39] = Keys::K9;
+}
+
 void Application::start_GDI_plus()
 {
-    GdiplusStartup(&drawing_objects.gdiplusToken, &drawing_objects.gdiplusStartupInput, NULL);
+    Gdiplus::GdiplusStartup(&drawing_objects.gdiplusToken, &drawing_objects.gdiplusStartupInput, NULL);
 }
 
 void Application::end_GDI_plus()
 {
-    GdiplusShutdown(drawing_objects.gdiplusToken);
+    Gdiplus::GdiplusShutdown(drawing_objects.gdiplusToken);
 }
