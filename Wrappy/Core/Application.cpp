@@ -104,19 +104,18 @@ static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPAR
     switch (msg)
     {
     case WM_CREATE:
-        win32_drawing_objects obj;
+        win32_drawing_objects *obj = Application::App()->get_drawing_objects();
+        win32_window_dimensions *dim = Application::App()->get_window_dimension();
 
-        obj.hdc = GetDC(win);
-        obj.hdcBuf = CreateCompatibleDC(obj.hdc);
-        obj.hbmpBuf = CreateCompatibleBitmap(obj.hdcBuf, Application::App()->get_window_width(), Application::App()->get_window_height());
-        obj.gfxBuf = Graphics::FromHDC(obj.hdcBuf);
-
-        Application::App()->set_drawing_objects(obj);
-        SelectObject(Application::App()->get_drawing_objects()->hdcBuf, Application::App()->get_drawing_objects()->hbmpBuf);
+        obj->hdc = GetDC(win);
+        obj->hdcBuf = CreateCompatibleDC(obj->hdc);
+        obj->hbmpBuf = CreateCompatibleBitmap(obj->hdcBuf, dim->width, dim->height);
+        obj->gfxBuf = Graphics::FromHDC(obj->hdcBuf);
+        SelectObject(obj->hdcBuf, obj->hbmpBuf);
 
         /* Alt Code */
         // TODO: If this works then remove out of drawing objects and just make a temporary.
-        DeleteObject(Application::App()->get_drawing_objects()->hbmpBuf);
+        DeleteObject(obj->hbmpBuf);
         /* End Alt Code */
 
         return 0;
@@ -132,18 +131,20 @@ static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPAR
         /* Alt Code */
         SelectObject(obj->hdcBuf, GetStockObject(WHITE_BRUSH));
         Rectangle(obj->hdcBuf, 0, 0, dim->width, dim->height);
+        Application::App()->draw(obj->hdcBuf); // USER FUNCTION
         DrawClock(obj->hdcBuf);
         obj->hdc = BeginPaint(win, &ps);
         BitBlt(obj->hdc, 0, 0, dim->width, dim->height, obj->hdcBuf, 0, 0, SRCCOPY);
         EndPaint(win, &ps);
         /* End Alt Code */
 
-        HDC temp = BeginPaint(win, &ps);
+        //HDC temp = BeginPaint(win, &ps);
         /* Start :: Custom Drawing*/
-        DrawClock(Application::App()->gfx_buffer());
+        //Application::App()->draw(temp);
+        //DrawClock(Application::App()->gfx_buffer());
         /* End :: Custom Drawing*/
-        BitBlt(temp, 0, 0, dim->width, dim->height, obj->hdcBuf, 0, 0, SRCCOPY);
-        EndPaint(win, &ps);
+        //BitBlt(temp, 0, 0, dim->width, dim->height, obj->hdcBuf, 0, 0, SRCCOPY);
+        //EndPaint(win, &ps);
         return 0;
     }
     break;
@@ -166,12 +167,13 @@ Application::Application(const char *window_name, unsigned int width, unsigned i
 
     window_dimensions.width = width;
     window_dimensions.height = height;
-
+    setup(); // USER FUNCTION.
     Window(window_name);
 }
 
 Application::~Application()
 {
+    end(); // USER FUNCTION.
     clean_graphics_object();
     end_GDI_plus();
     // TODO: Clean up
@@ -182,11 +184,10 @@ void Application::Run()
     ShowWindow(m_handle, SW_SHOW);
     UpdateWindow(m_handle);
 
-    running = true;
-
-    while (running)
+    while (app_state.application_running)
     {
         process_windows_events();
+        update(1.0); // USER FUNCTION.
         clear_window();
     }
 }
@@ -200,7 +201,7 @@ void Application::Window(std::string title)
     AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
 
     m_handle = CreateWindowEx(
-        0, windowClassName, title.c_str(),
+        0, app_state.application_class_name, title.c_str(),
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT,
         wr.right - wr.left, wr.bottom - wr.top,
@@ -238,7 +239,7 @@ void Application::process_windows_events()
     {
         if (msg.message == WM_QUIT)
         {
-            running = false;
+            app_state.application_running = false;
         }
 
         TranslateMessage(&msg);
@@ -264,10 +265,10 @@ void Application::clean_graphics_object()
 
 void Application::start_GDI_plus()
 {
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    GdiplusStartup(&drawing_objects.gdiplusToken, &drawing_objects.gdiplusStartupInput, NULL);
 }
 
 void Application::end_GDI_plus()
 {
-    GdiplusShutdown(gdiplusToken);
+    GdiplusShutdown(drawing_objects.gdiplusToken);
 }
