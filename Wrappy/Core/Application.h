@@ -54,6 +54,7 @@ public:
 	void register_window_class();
 	void process_windows_events();
 	void clear_window();
+    void clean_graphics_object();
 
 	// GDI+ Related
 	void start_GDI_plus();
