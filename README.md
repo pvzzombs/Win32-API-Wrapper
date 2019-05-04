@@ -1,6 +1,6 @@
 # Wrappy
 
-A Win32 Window Wrapper [work in progress]
+A Win32 API Wrapper [work in progress]
 
 <hr />
 
