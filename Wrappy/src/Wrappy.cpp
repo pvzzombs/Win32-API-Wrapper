@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-	auto app = Application::CreateApplication("Hello", 400, 400);
+	auto app = Application::CreateApplication(L"Hello", 400, 400);
 	app->Run();
 	delete app;
 	return 0;

@@ -1,8 +1,9 @@
-#ifndef WIN32_EVENT_HANDLER_H
-#define WIN32_EVENT_HANDLER_H
+#ifndef WIN32_INPUT_H
+#define WIN32_INPUT_H
+
 #include <map>
 
-struct button_states
+struct button_state
 {
     bool pressed = false;
     bool released = false;
@@ -24,11 +25,11 @@ struct win32_input_state
     std::map<uint16_t, uint8_t> key_map;
     bool		    new_key_state[256] { 0 };
     bool		    old_key_state[256] { 0 };
-    button_states	keyboard_state[256];
+    button_state	keyboard_state[256];
 
     bool		    new_mouse_state[5]{ 0 };
     bool		    old_mouse_state[5]{ 0 };
-    button_states	mouse_state[5];
+    button_state	mouse_state[5];
 };
 
 
