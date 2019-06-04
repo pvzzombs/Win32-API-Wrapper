@@ -28,6 +28,7 @@ void Application::Run()
     while (app_state.application_running)
     {
         process_windows_events();
+        process_input_state();
         update(1.0); // USER FUNCTION.
         clear_window();
     }
@@ -59,7 +60,7 @@ void Application::Window(LPCWSTR title)
 void Application::register_window_class()
 {
     WNDCLASS wc = {};
-    wc.style = 0; //CS_HREDRAW | CS_VREDRAW;
+    wc.style = 0;
     wc.lpfnWndProc = windows_event_handler;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
@@ -100,6 +101,31 @@ void Application::clean_graphics_object()
     DeleteDC(drawing_objects.hdcBuf);
     delete drawing_objects.gfxBuf;
     drawing_objects.gfxBuf = nullptr;
+}
+
+void Application::set_key_state(WPARAM w, bool state)
+{
+    input_state.new_key_state[key_map[w]] = state;
+}
+
+button_state Application::key(Keys key)
+{
+    return input_state.keyboard_state[key];
+}
+
+void Application::process_input_state()
+{
+    static unsigned int keys = sizeof(input_state.new_key_state) / sizeof(input_state.new_key_state[0]);
+
+    for (unsigned int i = 0; i < keys; ++i)
+    {
+        input_state.keyboard_state[i].pressed = input_state.new_key_state[i];
+
+        input_state.keyboard_state[i].held = input_state.old_key_state[i] && input_state.new_key_state[i];
+
+        input_state.old_key_state[i] = input_state.new_key_state[i];
+        input_state.new_key_state[i] = false;
+    }
 }
 
 void Application::init_input()

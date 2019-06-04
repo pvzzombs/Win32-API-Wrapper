@@ -25,7 +25,6 @@ class Application
 
     void Run();
 
-    // Insertion functions, used to insert user code into specific areas.
     virtual void setup(){};          // Called in constructor.
     virtual void update(float dt){}; // Called in run, before invalidation.
     virtual void draw(HDC hdc){};    // Called in WM_PAINT.
@@ -39,17 +38,19 @@ class Application
     win32_drawing_objects *get_drawing_objects() { return &drawing_objects; }
     inline Graphics *gfx_buffer() const { return drawing_objects.gfxBuf; }
 
-    void setFocus(bool has_focus) { app_state.application_has_focus = has_focus; }
+    void set_focus(bool has_focus) { app_state.application_has_focus = has_focus; }
     const bool window_has_focus() const { return app_state.application_has_focus; }
 
-    // TODO: Make more robust, handle incorrect input etc.
-	void set_key_state(WPARAM w, bool state) { input_state.new_key_state[key_map[w]] = state;	}
-    button_state get_key_state(Keys key) { return input_state.keyboard_state[key]; }
+    button_state key(Keys key); // Get button_state for key.
 
-  private:
-	  Application(LPCWSTR window_name, uint32_t width, uint32_t height);
+    void process_input_state();
 
-	  std::map<int, Keys> key_map;
+private:
+    Application(LPCWSTR window_name, uint32_t width, uint32_t height);
+
+    std::map<int, Keys> key_map;
+
+	void set_key_state(WPARAM w, bool state);
 
     // Functions
     void Window(LPCWSTR title);
@@ -71,7 +72,7 @@ class Application
     win32_application_state app_state;
     win32_input_state input_state;
 
-	static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l);
+    static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l);
 };
 
 #endif

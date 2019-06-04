@@ -6,7 +6,6 @@
 struct button_state
 {
     bool pressed = false;
-    bool released = false;
     bool held = false;
 };
 
@@ -25,11 +24,10 @@ struct win32_input_state
     std::map<uint16_t, uint8_t> key_map;
     bool		    new_key_state[256] { 0 };
     bool		    old_key_state[256] { 0 };
-    button_state	keyboard_state[256];
-
-    bool		    new_mouse_state[5]{ 0 };
-    bool		    old_mouse_state[5]{ 0 };
-    button_state	mouse_state[5];
+    button_state	keyboard_state[256] {{0, 0}};
+    // bool		    new_mouse_state[5]{ 0 };
+    // bool		    old_mouse_state[5]{ 0 };
+    // button_state	mouse_state[5];
 };
 
 

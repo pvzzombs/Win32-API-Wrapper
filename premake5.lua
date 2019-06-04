@@ -8,8 +8,8 @@ workspace "Win-32-Api-Wrapper"
 
 out = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "Wrappy"
-    location "Wrappy"
+project "WIN32Wrapper"
+    location "WIN32Wrapper"
     kind "ConsoleApp"
     language "C++"
     targetdir ("bin/" .. out .. "/%{prj.name}")
