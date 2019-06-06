@@ -4,26 +4,12 @@
 SECTION: Application Creation 
 -------------------------------- */
 Application *Application::app = nullptr;
-Application *CreateApplication(LPCWSTR window_name, unsigned int w, unsigned int h)
-{
-    app = new Application(window_name, width, height);
-    return app;
-}
-
-Application *App()
-{
-    if (app)
-    {
-        return app;
-    }
-}
 
 Application::Application(LPCWSTR window_name, uint32_t w, uint32_t h)
 {
-    app = this;
-
-    window_dimensions.width = width;
-    window_dimensions.height = height;
+	app = this;
+    window_dimensions.width = w;
+    window_dimensions.height = h;
     setup(); // NOTE: USER FUNCTION.
     Window(window_name);
 }
@@ -44,6 +30,7 @@ void Application::Run()
     {
         process_windows_events();
         process_input_state();
+		input(); // NOTE: USER FUNCTION.
         update(1.0); // NOTE: USER FUNCTION.
         clear_window();
     }
@@ -79,12 +66,12 @@ void Application::set_key_state(WPARAM w, bool state)
     input_state.new_key_state[key_map[w]] = state;
 }
 
-void Application::set_mouse_state(BUTTON b, bool state)
+void Application::set_mouse_state(BUTTONS b, bool state)
 {
     input_state.new_mouse_state[b] = state;
 }
 
-void Application::set_mouse_position(long &x, long &y)
+void Application::set_mouse_position(long x, long y)
 {
     input_state.mouse_pos[0] = x;
     input_state.mouse_pos[1] = y;
@@ -188,12 +175,19 @@ void Application::process_input_state()
         input_state.mouse_state[i].held = input_state.old_mouse_state[i] && input_state.new_mouse_state[i];
 
         input_state.old_mouse_state[i] = input_state.new_mouse_state[i];
-        input_state.new_mouse_state[i] = false;
     }
 }
 
 void Application::init_input()
 {
+
+	static unsigned int buttons = sizeof(input_state.new_mouse_state) / sizeof(input_state.new_mouse_state[0]);
+	for (unsigned int i = 0; i < buttons; ++i)
+	{
+		input_state.mouse_state[i].pressed = false;
+		input_state.mouse_state[i].held = false;
+	}
+
     key_map[0x41] = Keys::A;
     key_map[0x42] = Keys::B;
     key_map[0x43] = Keys::C;
@@ -408,11 +402,11 @@ LRESULT CALLBACK Application::windows_event_handler(HWND win, UINT msg, WPARAM w
 
     // SECTION: FOCUS
     case WM_SETFOCUS:
-        Application::App()->setFocus(true);
+        Application::App()->set_focus(true);
         return 0;
 
     case WM_KILLFOCUS:
-        Application::App()->setFocus(false);
+        Application::App()->set_focus(false);
         return 0;
 
     // SECTION: KEYBAORD
@@ -426,27 +420,27 @@ LRESULT CALLBACK Application::windows_event_handler(HWND win, UINT msg, WPARAM w
 
     // SECTION: MOUSE
     case WM_LBUTTONDOWN:
-        Application::App()->set_mouse_state(LEFT, true);
+        Application::App()->set_mouse_state(MOUSE_LEFT, true);
         return 0;
     case WM_LBUTTONUP:
-        Application::App()->set_mouse_state(LEFT, false);
+        Application::App()->set_mouse_state(MOUSE_LEFT, false);
         return 0;
     case WM_LBUTTONDBLCLK:
         Application::App()->double_click(); // NOTE: USER FUNCTION.
         return 0;
 
     case WM_MBUTTONDOWN:
-        Application::App()->set_mouse_state(MIDDLE, true);
+        Application::App()->set_mouse_state(MOUSE_MIDDLE, true);
         return 0;
     case WM_MBUTTONUP:
-        Application::App()->set_mouse_state(MIDDLE, false);
+        Application::App()->set_mouse_state(MOUSE_MIDDLE, false);
         return 0;
 
     case WM_RBUTTONDOWN:
-        Application::App()->set_mouse_state(RIGHT, true);
+        Application::App()->set_mouse_state(MOUSE_RIGHT, true);
         return 0;
     case WM_RBUTTONUP:
-        Application::App()->set_mouse_state(RIGHT, false);
+        Application::App()->set_mouse_state(MOUSE_RIGHT, false);
         return 0;
 
     case WM_MOUSEMOVE:

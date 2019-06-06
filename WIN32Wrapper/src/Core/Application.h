@@ -11,17 +11,24 @@ class Application
 {
 public:
     virtual ~Application();
-    static Application *CreateApplication(LPCWSTR window_name, unsigned int w, unsigned int h);
-    static Application *App();
+
+	static Application *App()
+	{
+		if (app)
+		{
+			return app;
+		}
+	}
 
     void Run();
 
     // SECTION: User defined functions
-    virtual void setup(){};          // INFO: Called in constructor.
-    virtual void update(float dt){}; // INFO: Called in run, before invalidation.
-    virtual void draw(HDC hdc){};    // INFO: Called in WM_PAINT.
-    virtual void end(){};            // INFO: Called in destructor, as first call.
-    virtual void double_click(){};   // INFO: Called when left mouse double clicked.
+    virtual void setup() {}         // INFO: Called in constructor.
+    virtual void update(float dt) {} // INFO: Called in run, before invalidation.
+	virtual void input() {}			 // INFO: Called in run, after input processed.	
+    virtual void draw(HDC hdc) {}    // INFO: Called in WM_PAINT.
+    virtual void end() {}            // INFO: Called in destructor, as first call.
+    virtual void double_click() {}   // INFO: Called when left mouse double clicked.
 
     // SECTION: Accessors
 
@@ -39,18 +46,18 @@ public:
     inline bool window_has_focus() { return app_state.application_has_focus; }
 
     // SECTION: Mutators
+	inline void set_focus(bool has_focus) { app_state.application_has_focus = has_focus; }
 
+    Application(LPCWSTR window_name, uint32_t w, uint32_t h);
 protected:
 
 private:
-    Application(LPCWSTR window_name, uint32_t w, uint32_t h);
     static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l);
 
     // SECTION: Private Mutators
     void set_key_state(WPARAM w, bool state);
-    void set_mouse_state(BUTTON b, bool state);
-    void set_mouse_position(long &x, long &y);
-    inline void set_focus(bool has_focus) { app_state.application_has_focus = has_focus; }
+    void set_mouse_state(BUTTONS b, bool state);
+    void set_mouse_position(long x, long y);
 
     // SECTION: Private Functions
     void Window(LPCWSTR title);

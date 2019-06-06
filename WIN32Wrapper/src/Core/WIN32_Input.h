@@ -2,6 +2,7 @@
 #define WIN32_INPUT_H
 
 #include <map>
+#include <vector>
 
 struct button_state
 {
@@ -11,9 +12,9 @@ struct button_state
 
 enum BUTTONS
 {
-    LEFT,
-    MIDDLE,
-    RIGHT
+    MOUSE_LEFT,
+	MOUSE_MIDDLE,
+	MOUSE_RIGHT
 };
 
 struct win32_input_state
@@ -23,7 +24,7 @@ struct win32_input_state
     bool old_key_state[256]{0};
     button_state keyboard_state[256]{{0, 0}};
 
-    std::vector<long> mouse_pos(3, 0);
+	std::vector<long> mouse_pos{ 0, 0 };
     bool new_mouse_state[3]{0};
     bool old_mouse_state[3]{0};
     button_state mouse_state[3];
