@@ -4,75 +4,77 @@
 #include "Structs.h"
 #include "WIN32_Input.h"
 
+#define DEMO_ON
+//#undef DEMO_ON
+
 class Application
 {
-  public:
+public:
     virtual ~Application();
-    static Application *app;
-    static Application *CreateApplication(LPCWSTR window_name, unsigned int width, unsigned int height)
-    {
-        app = new Application(window_name, width, height);
-        return app;
-    }
-
-    static Application *App()
-    {
-        if (app)
-        {
-            return app;
-        }
-    }
+    static Application *CreateApplication(LPCWSTR window_name, unsigned int w, unsigned int h);
+    static Application *App();
 
     void Run();
 
-    virtual void setup(){};          // Called in constructor.
-    virtual void update(float dt){}; // Called in run, before invalidation.
-    virtual void draw(HDC hdc){};    // Called in WM_PAINT.
-    virtual void end(){};            // Called in destructor, as first call.
+    // SECTION: User defined functions
+    virtual void setup(){};          // INFO: Called in constructor.
+    virtual void update(float dt){}; // INFO: Called in run, before invalidation.
+    virtual void draw(HDC hdc){};    // INFO: Called in WM_PAINT.
+    virtual void end(){};            // INFO: Called in destructor, as first call.
+    virtual void double_click(){};   // INFO: Called when left mouse double clicked.
 
-    // Accessors
-    const win32_window_dimensions *get_window_dimension() const { return &window_dimensions; }
-    inline const uint32_t get_window_width() const { return window_dimensions.width; }
-    inline const uint32_t get_window_height() const { return window_dimensions.height; }
+    // SECTION: Accessors
 
-    win32_drawing_objects *get_drawing_objects() { return &drawing_objects; }
-    inline Graphics *gfx_buffer() const { return drawing_objects.gfxBuf; }
+    // // SECTION: Object Accessors
+    inline win32_window_dimensions *get_window_dimension() { return &window_dimensions; }
+    inline win32_input_state get_input_state() { return input_state; }
+    inline win32_drawing_objects *get_drawing_objects() { return &drawing_objects; }
+    button_state key(Keys key);         // INFO: Get button_state for keyboard.
+    button_state mouse(BUTTONS button); // INFO: Get button_state for mouse.
 
-    void set_focus(bool has_focus) { app_state.application_has_focus = has_focus; }
-    const bool window_has_focus() const { return app_state.application_has_focus; }
+    // // SECTION: Variable Accessors
+    inline uint32_t get_window_width() { return window_dimensions.width; }
+    inline uint32_t get_window_height() { return window_dimensions.height; }
+    inline Graphics *gfx_buffer() { return drawing_objects.gfxBuf; }
+    inline bool window_has_focus() { return app_state.application_has_focus; }
 
-    button_state key(Keys key); // Get button_state for key.
+    // SECTION: Mutators
 
-    void process_input_state();
+protected:
 
 private:
-    Application(LPCWSTR window_name, uint32_t width, uint32_t height);
+    Application(LPCWSTR window_name, uint32_t w, uint32_t h);
+    static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l);
 
-    std::map<int, Keys> key_map;
+    // SECTION: Private Mutators
+    void set_key_state(WPARAM w, bool state);
+    void set_mouse_state(BUTTON b, bool state);
+    void set_mouse_position(long &x, long &y);
+    inline void set_focus(bool has_focus) { app_state.application_has_focus = has_focus; }
 
-	void set_key_state(WPARAM w, bool state);
-
-    // Functions
+    // SECTION: Private Functions
     void Window(LPCWSTR title);
     void register_window_class();
     void process_windows_events();
     void clear_window();
     void clean_graphics_object();
     void init_input();
+    void process_input_state();
 
     void start_GDI_plus();
     void end_GDI_plus();
 
-    // Variables
+    // SECTION: Variables
+    static Application *app;
     HWND m_handle;
     HDC DeviceContext;
-
     win32_window_dimensions window_dimensions;
-    win32_drawing_objects drawing_objects;
-    win32_application_state app_state;
+
+    std::map<int, Keys> key_map;
     win32_input_state input_state;
 
-    static LRESULT CALLBACK windows_event_handler(HWND win, UINT msg, WPARAM w, LPARAM l);
+    win32_drawing_objects drawing_objects;
+    win32_application_state app_state;
 };
 
 #endif
