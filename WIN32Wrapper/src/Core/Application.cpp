@@ -7,7 +7,7 @@ Application *Application::app = nullptr;
 
 Application::Application(LPCWSTR window_name, uint32_t w, uint32_t h)
 {
-	app = this;
+    app = this;
     window_dimensions.width = w;
     window_dimensions.height = h;
     setup(); // NOTE: USER FUNCTION.
@@ -30,7 +30,7 @@ void Application::Run()
     {
         process_windows_events();
         process_input_state();
-		input(); // NOTE: USER FUNCTION.
+        input();     // NOTE: USER FUNCTION.
         update(1.0); // NOTE: USER FUNCTION.
         clear_window();
     }
@@ -181,12 +181,12 @@ void Application::process_input_state()
 void Application::init_input()
 {
 
-	static unsigned int buttons = sizeof(input_state.new_mouse_state) / sizeof(input_state.new_mouse_state[0]);
-	for (unsigned int i = 0; i < buttons; ++i)
-	{
-		input_state.mouse_state[i].pressed = false;
-		input_state.mouse_state[i].held = false;
-	}
+    static unsigned int buttons = sizeof(input_state.new_mouse_state) / sizeof(input_state.new_mouse_state[0]);
+    for (unsigned int i = 0; i < buttons; ++i)
+    {
+        input_state.mouse_state[i].pressed = false;
+        input_state.mouse_state[i].held = false;
+    }
 
     key_map[0x41] = Keys::A;
     key_map[0x42] = Keys::B;
@@ -236,8 +236,6 @@ void Application::init_input()
     key_map[VK_BACK] = Keys::BACK;
     key_map[VK_ESCAPE] = Keys::ESCAPE;
     key_map[VK_RETURN] = Keys::ENTER;
-    key_map[VK_PAUSE] = Keys::PAUSE;
-    key_map[VK_SCROLL] = Keys::SCROLL;
     key_map[VK_TAB] = Keys::TAB;
     key_map[VK_DELETE] = Keys::DEL;
     key_map[VK_HOME] = Keys::HOME;
